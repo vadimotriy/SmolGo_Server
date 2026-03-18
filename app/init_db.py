@@ -1,7 +1,7 @@
 import asyncpg
-import asyncio
+import os
 
-DATABASE_URL = "postgresql://postgres:3141592@localhost/smolgo"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 async def create_table():
     conn = await asyncpg.connect(DATABASE_URL)
@@ -17,8 +17,7 @@ async def create_table():
         CREATE TABLE IF NOT EXISTS users_information (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
-            registration TEXT NOT NULL,
-            total_quests TEXT NOT NULL
+            registration TEXT NOT NULL
         )
     ''')
     await conn.close()

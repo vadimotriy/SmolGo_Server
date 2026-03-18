@@ -1,28 +1,26 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from app.models import *
 from databases import Database
 from contextlib import asynccontextmanager
 import hashlib
 import datetime
+import os
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await database.connect()
-    print("start")
     yield
     await database.disconnect()
-    print("end")
 
 
-DATABASE_URL = "postgresql://postgres:3141592@localhost/smolgo"
+DATABASE_URL = os.getenv("DATABASE_URL")
 database = Database(DATABASE_URL)
 
 app = FastAPI(lifespan=lifespan)
 
 @app.post("/registration")
 async def create_item(data: Registration):
-
     query = """
         SELECT id
         FROM users
@@ -46,8 +44,8 @@ async def create_item(data: Registration):
         """
 
         query2 = """
-            INSERT INTO users_information (name, registration, total_quests)
-            VALUES (:name, :registration, :total_quests)
+            INSERT INTO users_information (name, registration)
+            VALUES (:name, :registration)
         """
 
         text = data.password.encode("utf-8")
@@ -60,11 +58,10 @@ async def create_item(data: Registration):
 
         await database.execute(
             query=query2,
-            values={"name": data.name, "registration": str(datetime.date.today()), "total_quests": "0"}
+            values={"name": data.name, "registration": str(datetime.date.today())}
         )
 
         print(user_id)
 
         return {"message": "Succes"}
     return {"message": "email is used"}
-
