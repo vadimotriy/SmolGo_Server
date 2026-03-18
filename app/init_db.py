@@ -1,4 +1,5 @@
 import asyncpg
+import asyncio
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
