@@ -61,7 +61,47 @@ async def create_item(data: Registration):
             values={"name": data.name, "registration": str(datetime.date.today())}
         )
 
-        print(user_id)
-
         return {"message": "Succes"}
-    return {"message": "email is used"}
+    return {"message": "Email is used"}
+
+
+@app.post("/login")
+async def login(data: Login):
+    query = """
+        SELECT id
+        FROM users
+        WHERE email = :user_email
+    """
+
+    try:
+        result = await database.fetch_one(
+            query=query,
+            values={"user_email": data.email}
+        )
+
+    except Exception:
+        return {"message": "Fail"}
+    
+    if result is not None:
+        result = dict(result)
+        id = result["id"]
+
+        query = """
+            SELECT name
+            FROM users_information
+            WHERE id = :user_id
+        """
+
+        result = await database.fetch_one(
+            query=query,
+            values={"user_id": id}
+        )
+        result = dict(result)
+
+        text = data.password.encode("utf-8")
+        text = hashlib.sha256(text).hexdigest()
+
+        return {"message": "Succes",
+                "name": result["name"]}
+    
+    return {"message": "Email has not been used"}
