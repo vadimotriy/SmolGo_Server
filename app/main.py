@@ -86,20 +86,35 @@ async def login(data: Login):
         result = dict(result)
         id = result["id"]
 
-        query = """
+        query1 = """
             SELECT name
             FROM users_information
             WHERE id = :user_id
         """
 
+        query2 = """
+            SELECT password
+            FROM users
+            WHERE id = :user_id
+        """
+
         result = await database.fetch_one(
-            query=query,
+            query=query1,
             values={"user_id": id}
         )
         result = dict(result)
 
+        password = await database.fetch_one(
+            query=query2,
+            values={"user_id": id}
+        )
+        password = dict(password)
+
         text = data.password.encode("utf-8")
         text = hashlib.sha256(text).hexdigest()
+
+        if text != password["password"]:
+            return {"message": "Password is not correct"}
 
         return {"message": "Succes",
                 "name": result["name"]}
