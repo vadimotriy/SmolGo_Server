@@ -80,7 +80,7 @@ async def login(data: Login):
         )
 
     except Exception:
-        return {"message": "Fail"}
+        return {"message": "Fail on DB"}
     
     if result is not None:
         result = dict(result)
@@ -120,3 +120,45 @@ async def login(data: Login):
                 "name": result["name"]}
     
     return {"message": "Email has not been used"}
+
+
+@app.post("/create_news")
+async def create_news(data: News):
+    if data.password != "FHA)*SYD97SYG(!G@!GJGDAS9yu)werh*YWdq1j;!01":
+        return {"message": "Password is not correct"}
+
+    query = """
+        INSERT INTO news (link, title, text, date)
+        VALUES (:link, :title, :text, :date)
+    """
+    try:
+        await database.execute(
+            query=query,
+            values={"link": data.link, "title": data.title, "text": data.text, "date": data.date}
+        )
+        return {"message": "Succes"}
+    except Exception:
+        return {"message": "Fail on DB"}
+
+
+@app.get("/get_news")
+async def get_news():
+    query = """
+        SELECT *
+        FROM news
+        ORDER BY id
+        DESC LIMIT 3;
+    """
+
+    try:
+        result = await database.fetch_all(
+            query=query
+        )
+        result = [dict(row) for row in result]
+
+        return { "message": "Succes",
+                "news_1": result[0],
+                "news_2": result[1],
+                "news_3": result[2] }
+    except Exception:
+        return {"message": "Fail on DB"}

@@ -21,6 +21,16 @@ async def create_table():
             registration TEXT NOT NULL
         )
     ''')
+
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS news (
+            id SERIAL PRIMARY KEY,
+            link TEXT NOT NULL,
+            title TEXT NOT NULL,
+            text TEXT NOT NULL,
+            date TEXT NOT NULL
+        )
+    ''')
     await conn.close()
 
 asyncio.run(create_table())

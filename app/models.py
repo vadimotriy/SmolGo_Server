@@ -10,3 +10,11 @@ class Registration(BaseModel):
     name: str
     email: str
     password: str
+
+
+class News(BaseModel):
+    password: str
+    link: str
+    title: str
+    text: str
+    date: str
