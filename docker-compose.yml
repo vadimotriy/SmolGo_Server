@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"  ← можно удалить, это устаревший атрибут
 
 services:
   db:
@@ -10,7 +10,23 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
-    # ports: [] # НЕ открывайте 5432 наружу! Доступ только из контейнеров
+    healthcheck:  # ✅ Добавляем проверку здоровья
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s  # даём БД время на первый запуск
+
+  init:
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy  # теперь это сработает ✅
+    command: >
+      python3 app/init_db.py
+    restart: "no"
 
   app:
     build: .
@@ -33,18 +49,6 @@ services:
     depends_on:
       - app
     restart: unless-stopped
-
-  init:
-    build: .
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-    depends_on:
-      db:
-        condition: service_healthy  # ждём, пока БД будет готова
-    command: >
-      python3 app/init_db.py
-    restart: "no"  # не перезапускать после выполнения
-    # Опционально: добавить volume, чтобы создать флаг-файл "initialized"
 
 volumes:
   pg_data:
