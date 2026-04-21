@@ -1,4 +1,4 @@
-{82.23.249.75} {
+http://82.23.249.75 {
     reverse_proxy app:8000
     encode gzip
     log {

@@ -17,7 +17,8 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
     depends_on:
-      - db
+      init:
+        condition: service_completed_successfully  # ⚠️ требует Compose V2.20+
     restart: unless-stopped
 
   proxy:
@@ -32,6 +33,18 @@ services:
     depends_on:
       - app
     restart: unless-stopped
+
+  init:
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy  # ждём, пока БД будет готова
+    command: >
+      python3 app/init_db.py
+    restart: "no"  # не перезапускать после выполнения
+    # Опционально: добавить volume, чтобы создать флаг-файл "initialized"
 
 volumes:
   pg_data:
